@@ -11,7 +11,7 @@ export function useTheme() {
 
   useEffect(() => {
     try {
-      const stored = localStorage.getItem('movie-stream-theme') as Theme | null
+      const stored = localStorage.getItem('stream-store-theme') as Theme | null
       if (stored) {
         setTheme(stored)
       }
@@ -33,7 +33,7 @@ export function useTheme() {
     }
     setResolvedTheme(resolved)
     document.documentElement.classList.toggle('dark', resolved === 'dark')
-    localStorage.setItem('movie-stream-theme', theme)
+    localStorage.setItem('stream-store-theme', theme)
   }, [theme, isLoaded])
 
   useEffect(() => {

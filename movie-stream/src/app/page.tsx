@@ -6,8 +6,8 @@ import { HeroSkeleton } from '@/components/layout/Hero'
 import type { TMDBMovieDetail, TMDBMovie } from '@/types/tmdb'
 
 export const metadata: Metadata = {
-  title: 'Discover & Track Movies',
-  description: 'Browse popular, top-rated, and upcoming movies. Build your watchlist and never miss a great film.',
+  title: 'Discover & Stream Movies',
+  description: 'Browse popular, top-rated, and upcoming movies on Stream Store. Build your watchlist and never miss a great film.',
 }
 
 async function getHomeData() {
@@ -47,7 +47,7 @@ export default async function HomePage() {
         <HeroSkeleton />
       )}
 
-      <div className="container-main section">
+      <div className="container-main section space-y-16">
         <FeaturedMovieRow movies={popular.slice(0, 1)} isLoading={!popular.length} />
 
         <MovieRow title="Popular Movies" movies={popular} type="popular" endpoint="/movies/popular" />

@@ -13,7 +13,7 @@ export default function WatchlistPage() {
   const { watchlist, isLoaded, removeFromWatchlist, isInWatchlist } = useWatchlist()
 
   useEffect(() => {
-    document.title = `My Watchlist (${watchlist.length}) | MovieStream`
+    document.title = `My Watchlist (${watchlist.length}) | Stream Store`
   }, [watchlist.length])
 
   if (!isLoaded) {
@@ -21,7 +21,7 @@ export default function WatchlistPage() {
       <div className="container-main section animate-in">
         <header className="mb-12">
           <h1 className="text-display-md font-bold tracking-tight mb-4 flex items-center gap-3">
-            <Bookmark className="h-8 w-8 text-brand-500" />
+            <Bookmark className="h-8 w-8 text-brand-600" />
             My Watchlist
           </h1>
         </header>
@@ -35,7 +35,7 @@ export default function WatchlistPage() {
       <div className="container-main section animate-in">
         <header className="mb-12">
           <h1 className="text-display-md font-bold tracking-tight mb-4 flex items-center gap-3">
-            <Bookmark className="h-8 w-8 text-brand-500" />
+            <Bookmark className="h-8 w-8 text-brand-600" />
             My Watchlist
           </h1>
           <p className="text-body-lg text-text-secondary-dark dark:text-text-secondary-light">
@@ -62,7 +62,7 @@ export default function WatchlistPage() {
       <header className="mb-12 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
         <div>
           <h1 className="text-display-md font-bold tracking-tight mb-2 flex items-center gap-3">
-            <Bookmark className="h-8 w-8 text-brand-500" />
+            <Bookmark className="h-8 w-8 text-brand-600" />
             My Watchlist
           </h1>
           <p className="text-body-lg text-text-secondary-dark dark:text-text-secondary-light">

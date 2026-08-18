@@ -48,7 +48,7 @@ export function MovieDetailClient({ movie }: MovieDetailClientProps) {
         style={{ backgroundImage: `url(${backdropUrl})` }}
         aria-labelledby="movie-title"
       >
-        <div className="absolute inset-0 bg-gradient-to-t from-surface-dark via-surface-dark/50 to-transparent dark:from-surface-light dark:via-surface-light/50" />
+        <div className="absolute inset-0 bg-gradient-to-t from-surface-dark via-surface-dark/50 to-transparent" />
         <div className="container-main relative z-10 pb-12 md:pb-16">
           <div className="grid md:grid-cols-4 gap-8 items-end">
             <div className="md:col-span-1">
@@ -57,10 +57,8 @@ export function MovieDetailClient({ movie }: MovieDetailClientProps) {
                 alt={`${movie.title} poster`}
                 width={300}
                 height={450}
-                className="rounded-xl shadow-shadow-xl w-full max-w-xs mx-auto md:mx-0"
+                className="rounded-2xl shadow-shadow-xl w-full max-w-xs mx-auto md:mx-0"
                 priority
-                placeholder="blur"
-                blurDataURL={getImageUrl(movie.poster_path, 'w30') || undefined}
               />
             </div>
             <div className="md:col-span-3 space-y-4">
@@ -79,7 +77,7 @@ export function MovieDetailClient({ movie }: MovieDetailClientProps) {
               </h1>
 
               {movie.tagline && (
-                <p className="text-body-lg text-text-secondary-dark dark:text-text-secondary-light font-medium italic">
+                <p className="text-body-lg text-text-secondary-dark font-medium italic">
                   &ldquo;{movie.tagline}&rdquo;
                 </p>
               )}
@@ -100,8 +98,8 @@ export function MovieDetailClient({ movie }: MovieDetailClientProps) {
               </div>
 
               {genres && (
-                <div className="flex flex-wrap items-center gap-2 text-body-sm text-text-muted-dark dark:text-text-muted-light">
-                  <span className="font-medium text-text-secondary-dark dark:text-text-secondary-light">Genres:</span>
+                <div className="flex flex-wrap items-center gap-2 text-body-sm text-text-muted-dark">
+                  <span className="font-medium text-text-secondary-dark">Genres:</span>
                   {movie.genres?.map((genre) => (
                     <span key={genre.id} className="badge-secondary">{genre.name}</span>
                   ))}
@@ -117,7 +115,7 @@ export function MovieDetailClient({ movie }: MovieDetailClientProps) {
           <div className="lg:col-span-2 space-y-12">
             <section aria-labelledby="overview-heading">
               <h2 id="overview-heading" className="section-title mb-4">Overview</h2>
-              <p className="text-body text-text-secondary-dark dark:text-text-secondary-light leading-relaxed whitespace-pre-line">
+              <p className="text-body text-text-secondary-dark leading-relaxed whitespace-pre-line">
                 {movie.overview || 'No overview available.'}
               </p>
             </section>
@@ -126,38 +124,38 @@ export function MovieDetailClient({ movie }: MovieDetailClientProps) {
               <h2 id="details-heading" className="section-title mb-4">Details</h2>
               <dl className="grid grid-cols-2 md:grid-cols-4 gap-4 text-body-sm">
                 <div>
-                  <dt className="text-text-muted-dark dark:text-text-muted-light mb-1">Status</dt>
+                  <dt className="text-text-muted-dark mb-1">Status</dt>
                   <dd className="font-medium capitalize">{movie.status}</dd>
                 </div>
                 <div>
-                  <dt className="text-text-muted-dark dark:text-text-muted-light mb-1">Release Date</dt>
+                  <dt className="text-text-muted-dark mb-1">Release Date</dt>
                   <dd className="font-medium">{formatReleaseDate(movie.release_date)}</dd>
                 </div>
                 <div>
-                  <dt className="text-text-muted-dark dark:text-text-muted-light mb-1">Runtime</dt>
+                  <dt className="text-text-muted-dark mb-1">Runtime</dt>
                   <dd className="font-medium">{formatRuntime(movie.runtime)}</dd>
                 </div>
                 <div>
-                  <dt className="text-text-muted-dark dark:text-text-muted-light mb-1">Budget</dt>
+                  <dt className="text-text-muted-dark mb-1">Budget</dt>
                   <dd className="font-medium">${formatNumber(movie.budget)}</dd>
                 </div>
                 <div>
-                  <dt className="text-text-muted-dark dark:text-text-muted-light mb-1">Revenue</dt>
+                  <dt className="text-text-muted-dark mb-1">Revenue</dt>
                   <dd className="font-medium">${formatNumber(movie.revenue)}</dd>
                 </div>
                 <div>
-                  <dt className="text-text-muted-dark dark:text-text-muted-light mb-1">Original Language</dt>
+                  <dt className="text-text-muted-dark mb-1">Original Language</dt>
                   <dd className="font-medium uppercase">{movie.original_language}</dd>
                 </div>
                 {productionCompanies && (
                   <div className="col-span-2 md:col-span-4">
-                    <dt className="text-text-muted-dark dark:text-text-muted-light mb-1">Production Companies</dt>
+                    <dt className="text-text-muted-dark mb-1">Production Companies</dt>
                     <dd className="font-medium">{productionCompanies}</dd>
                   </div>
                 )}
                 {movie.homepage && (
                   <div className="col-span-2 md:col-span-4">
-                    <dt className="text-text-muted-dark dark:text-text-muted-light mb-1">Official Website</dt>
+                    <dt className="text-text-muted-dark mb-1">Official Website</dt>
                     <dd>
                       <a href={movie.homepage} target="_blank" rel="noopener noreferrer" className="font-medium text-brand-500 hover:underline flex items-center gap-1">
                         Visit Website
@@ -174,20 +172,18 @@ export function MovieDetailClient({ movie }: MovieDetailClientProps) {
                 <h2 id="cast-heading" className="section-title mb-4">Cast</h2>
                 <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-4 -mx-4 px-4">
                   {cast.map((actor) => (
-                    <Link key={actor.id} href={`/person/${actor.id}`} className="flex flex-col items-center shrink-0 group">
+                    <div key={actor.id} className="flex flex-col items-center shrink-0 group">
                       <div className="relative w-32 h-32 rounded-xl overflow-hidden">
                         <Image
                           src={getImageUrl(actor.profile_path, 'w185')}
                           alt={actor.name}
                           fill
                           className="object-cover transition-transform duration-300 group-hover:scale-105"
-                          placeholder="blur"
-                          blurDataURL={getImageUrl(actor.profile_path, 'w30') || undefined}
                         />
                       </div>
                       <p className="mt-2 text-body-sm font-medium text-center max-w-[120px] line-clamp-1">{actor.name}</p>
-                      <p className="text-caption text-text-muted-dark dark:text-text-muted-light text-center max-w-[120px] line-clamp-1">as {actor.character}</p>
-                    </Link>
+                      <p className="text-caption text-text-muted-dark text-center max-w-[120px] line-clamp-1">as {actor.character}</p>
+                    </div>
                   ))}
                 </div>
               </section>
@@ -198,20 +194,18 @@ export function MovieDetailClient({ movie }: MovieDetailClientProps) {
                 <h2 id="crew-heading" className="section-title mb-4">Crew</h2>
                 <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-4 -mx-4 px-4">
                   {crew.map((member) => (
-                    <Link key={member.id} href={`/person/${member.id}`} className="flex flex-col items-center shrink-0 group">
+                    <div key={member.credit_id} className="flex flex-col items-center shrink-0 group">
                       <div className="relative w-24 h-24 rounded-full overflow-hidden">
                         <Image
                           src={getImageUrl(member.profile_path, 'w185')}
                           alt={member.name}
                           fill
                           className="object-cover transition-transform duration-300 group-hover:scale-105"
-                          placeholder="blur"
-                          blurDataURL={getImageUrl(member.profile_path, 'w30') || undefined}
                         />
                       </div>
                       <p className="mt-2 text-body-sm font-medium text-center max-w-[100px] line-clamp-1">{member.name}</p>
-                      <p className="text-caption text-text-muted-dark dark:text-text-muted-light text-center max-w-[100px] line-clamp-1">{member.job}</p>
-                    </Link>
+                      <p className="text-caption text-text-muted-dark text-center max-w-[100px] line-clamp-1">{member.job}</p>
+                    </div>
                   ))}
                 </div>
               </section>
@@ -227,7 +221,7 @@ export function MovieDetailClient({ movie }: MovieDetailClientProps) {
                       href={movie['watch/providers']?.results?.US?.link || '#'}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-2 px-4 py-2 rounded-lg bg-surface-card-dark border border-surface-border-dark hover:border-brand-500 transition-colors dark:bg-surface-card-light dark:border-surface-border-light"
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg bg-surface-card-dark border border-surface-border-dark hover:border-brand-500 transition-colors"
                     >
                       <Image
                         src={`https://image.tmdb.org/t/p/w45${provider.logo_path}`}
@@ -258,27 +252,27 @@ export function MovieDetailClient({ movie }: MovieDetailClientProps) {
                 <h3 className="text-heading-sm font-semibold">Quick Info</h3>
                 <dl className="space-y-3 text-body-sm">
                   <div className="flex justify-between">
-                    <dt className="text-text-muted-dark dark:text-text-muted-light">Rating</dt>
+                    <dt className="text-text-muted-dark">Rating</dt>
                     <dd className="font-medium flex items-center gap-1">
                       <Star className="h-4 w-4 fill-brand-500 text-brand-500" />
                       {formatRating(movie.vote_average)}/10
                     </dd>
                   </div>
                   <div className="flex justify-between">
-                    <dt className="text-text-muted-dark dark:text-text-muted-light">Votes</dt>
+                    <dt className="text-text-muted-dark">Votes</dt>
                     <dd className="font-medium">{formatNumber(movie.vote_count)}</dd>
                   </div>
                   <div className="flex justify-between">
-                    <dt className="text-text-muted-dark dark:text-text-muted-light">Popularity</dt>
+                    <dt className="text-text-muted-dark">Popularity</dt>
                     <dd className="font-medium">{movie.popularity.toFixed(1)}</dd>
                   </div>
                   <div className="flex justify-between">
-                    <dt className="text-text-muted-dark dark:text-text-muted-light">Release</dt>
+                    <dt className="text-text-muted-dark">Release</dt>
                     <dd className="font-medium">{formatReleaseDate(movie.release_date)}</dd>
                   </div>
                   {movie.runtime && (
                     <div className="flex justify-between">
-                      <dt className="text-text-muted-dark dark:text-text-muted-light">Runtime</dt>
+                      <dt className="text-text-muted-dark">Runtime</dt>
                       <dd className="font-medium">{formatRuntime(movie.runtime)}</dd>
                     </div>
                   )}
@@ -302,7 +296,7 @@ export function MovieDetailClient({ movie }: MovieDetailClientProps) {
                   <ul className="space-y-2">
                     {movie.production_countries.map((country) => (
                       <li key={country.iso_3166_1} className="flex justify-between text-body-sm">
-                        <span className="text-text-secondary-dark dark:text-text-secondary-light">{country.name}</span>
+                        <span className="text-text-secondary-dark">{country.name}</span>
                         <span className="font-medium uppercase">{country.iso_3166_1}</span>
                       </li>
                     ))}

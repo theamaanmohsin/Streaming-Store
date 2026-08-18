@@ -1,16 +1,21 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { getMovieDetail, getImageUrl, getBackdropUrl, getTrailerKey, getYouTubeEmbedUrl, formatYear, formatRuntime, formatRating, formatReleaseDate, formatNumber } from '@/lib/tmdb'
+import { getMovieDetail, getBackdropUrl } from '@/lib/tmdb'
 import { MovieDetailClient } from './MovieDetailClient'
-import type { TMDBMovieDetail } from '@/types/tmdb'
 
 interface PageProps {
-  params: Promise<{ id: string }>
+  params: { id: string }
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { id } = await params
-  const movie = await getMovieDetail(parseInt(id)).catch(() => null)
+  const resolvedParams = await Promise.resolve(params)
+  const id = resolvedParams?.id
+  const movieId = parseInt(id)
+  if (isNaN(movieId)) {
+    return { title: 'Movie Not Found' }
+  }
+
+  const movie = await getMovieDetail(movieId).catch(() => null)
   
   if (!movie) {
     return { title: 'Movie Not Found' }
@@ -18,9 +23,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   return {
     title: movie.title,
-    description: movie.overview || `Watch ${movie.title} - ${movie.tagline || 'A great movie'}`,
+    description: movie.overview || `Watch ${movie.title} - ${movie.tagline || 'A great movie'} on Stream Store`,
     openGraph: {
-      title: movie.title,
+      title: `${movie.title} | Stream Store`,
       description: movie.overview || movie.tagline || '',
       type: 'video.movie',
       images: movie.backdrop_path ? [getBackdropUrl(movie.backdrop_path, 'w1280')] : [],
@@ -28,7 +33,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     },
     twitter: {
       card: 'summary_large_image',
-      title: movie.title,
+      title: `${movie.title} | Stream Store`,
       description: movie.overview || movie.tagline || '',
       images: movie.backdrop_path ? [getBackdropUrl(movie.backdrop_path, 'w1280')] : [],
     },
@@ -36,7 +41,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function MovieDetailPage({ params }: PageProps) {
-  const { id } = await params
+  const resolvedParams = await Promise.resolve(params)
+  const id = resolvedParams?.id
   const movieId = parseInt(id)
 
   if (isNaN(movieId)) {

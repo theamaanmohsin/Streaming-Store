@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import type { TMDBMovie } from '@/types/tmdb'
 
-const WATCHLIST_KEY = 'movie-stream-watchlist'
+const WATCHLIST_KEY = 'stream-store-watchlist'
 
 export function useWatchlist() {
   const [watchlist, setWatchlist] = useState<TMDBMovie[]>([])
@@ -22,10 +22,9 @@ export function useWatchlist() {
     }
   }, [])
 
-  const saveWatchlist = useCallback((movies: TMDBMovie[]) => {
+  const saveToStorage = useCallback((movies: TMDBMovie[]) => {
     try {
       localStorage.setItem(WATCHLIST_KEY, JSON.stringify(movies))
-      setWatchlist(movies)
     } catch (error) {
       console.error('Failed to save watchlist:', error)
     }
@@ -35,18 +34,18 @@ export function useWatchlist() {
     setWatchlist((prev) => {
       if (prev.some((m) => m.id === movie.id)) return prev
       const updated = [movie, ...prev]
-      saveWatchlist(updated)
+      saveToStorage(updated)
       return updated
     })
-  }, [saveWatchlist])
+  }, [saveToStorage])
 
   const removeFromWatchlist = useCallback((movieId: number) => {
     setWatchlist((prev) => {
       const updated = prev.filter((m) => m.id !== movieId)
-      saveWatchlist(updated)
+      saveToStorage(updated)
       return updated
     })
-  }, [saveWatchlist])
+  }, [saveToStorage])
 
   const toggleWatchlist = useCallback((movie: TMDBMovie) => {
     setWatchlist((prev) => {
@@ -54,18 +53,19 @@ export function useWatchlist() {
       const updated = exists
         ? prev.filter((m) => m.id !== movie.id)
         : [movie, ...prev]
-      saveWatchlist(updated)
+      saveToStorage(updated)
       return updated
     })
-  }, [saveWatchlist])
+  }, [saveToStorage])
 
   const isInWatchlist = useCallback((movieId: number) => {
     return watchlist.some((m) => m.id === movieId)
   }, [watchlist])
 
   const clearWatchlist = useCallback(() => {
-    saveWatchlist([])
-  }, [saveWatchlist])
+    setWatchlist([])
+    saveToStorage([])
+  }, [saveToStorage])
 
   return {
     watchlist,

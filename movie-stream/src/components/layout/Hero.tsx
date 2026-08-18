@@ -31,36 +31,36 @@ export function Hero({ movie }: HeroProps) {
 
   return (
     <section
-      className="relative min-h-[90vh] flex items-end overflow-hidden"
+      className="relative min-h-[80vh] flex items-end overflow-hidden"
       aria-labelledby="hero-title"
       style={{ backgroundImage: `url(${backdropUrl})` }}
     >
-      <div className="absolute inset-0 bg-gradient-to-t from-surface-dark via-surface-dark/50 to-transparent dark:from-surface-light dark:via-surface-light/50" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-brand-500/10 via-transparent to-transparent" />
+      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.75)_0%,rgba(0,0,0,0.5)_42%,rgba(0,0,0,0)_78%)]" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-transparent to-transparent" />
 
-      <div className="container-main relative z-10 pb-16 md:pb-24 lg:pb-32 animate-in">
-        <div className="max-w-4xl">
-          <div className="flex flex-wrap items-center gap-3 mb-6">
-            <span className="badge-primary">{formatYear(movie.release_date)}</span>
-            {movie.runtime && <span className="badge-secondary">{formatRuntime(movie.runtime)}</span>}
-            {movie.genres?.[0] && <span className="badge-secondary">{movie.genres[0].name}</span>}
-            <span className="rating">
-              <svg className="h-3.5 w-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      <div className="container-main relative z-10 pb-20 md:pb-32 lg:pb-40 animate-in">
+        <div className="max-w-5xl">
+          <div className="flex flex-wrap items-center gap-4 mb-8">
+            <span className="badge-secondary border-brand-contrast/30 bg-black/35 text-xs text-brand-contrast font-medium">{formatYear(movie.release_date)}</span>
+            {movie.runtime && <span className="badge-secondary border-brand-contrast/30 bg-black/35 text-xs text-brand-contrast">{formatRuntime(movie.runtime)}</span>}
+            {movie.genres?.[0] && <span className="badge-secondary border-brand-contrast/30 bg-black/35 text-xs text-brand-contrast">{movie.genres[0].name}</span>}
+            <span className="rating bg-brand-contrast text-surface-dark">
+              <svg className="h-4 w-4 fill-current" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
               {formatRating(movie.vote_average)}
             </span>
           </div>
 
-          <h1 id="hero-title" className="text-display-xl font-bold tracking-tight mb-6">
+          <h1 id="hero-title" className="text-display-2xl font-bold tracking-tight mb-8">
             {movie.title}
           </h1>
 
           {movie.tagline && (
-            <p className="text-display-sm text-text-secondary-dark dark:text-text-secondary-light mb-6 font-medium">
+            <p className="text-display-sm text-brand-contrast/80 mb-8 font-medium">
               &ldquo;{movie.tagline}&rdquo;
             </p>
           )}
 
-          <p className="text-body-lg text-text-secondary-dark dark:text-text-secondary-light line-clamp-3 mb-8 max-w-2xl">
+          <p className="text-body-lg text-brand-contrast/80 line-clamp-4 mb-10 max-w-3xl">
             {movie.overview || 'No overview available.'}
           </p>
 
@@ -76,8 +76,8 @@ export function Hero({ movie }: HeroProps) {
           </div>
 
           {genres && (
-            <p className="mt-6 text-body-sm text-text-muted-dark dark:text-text-muted-light">
-              <span className="font-medium text-text-secondary-dark dark:text-text-secondary-light">Genres:</span> {genres}
+            <p className="mt-8 text-body-sm text-brand-contrast/70">
+              <span className="font-medium text-brand-contrast">Genres:</span> {genres}
             </p>
           )}
         </div>
@@ -120,17 +120,17 @@ function TrailerModal({ isOpen, onClose, movieTitle, trailerKey }: { isOpen: boo
 
 export function HeroSkeleton() {
   return (
-    <section className="relative min-h-[90vh] flex items-end overflow-hidden animate-pulse-soft">
+    <section className="relative min-h-[80vh] flex items-end overflow-hidden animate-pulse-soft">
       <div className="absolute inset-0 bg-gradient-to-r from-surface-border-dark via-surface-card-dark to-surface-border-dark dark:from-surface-border-light dark:via-surface-card-light dark:to-surface-border-light" style={{ backgroundSize: '200% 100%' }} />
-      <div className="container-main relative z-10 pb-16 md:pb-24 lg:pb-32">
-        <div className="max-w-4xl space-y-4">
-          <div className="h-6 w-32 bg-gradient-to-r from-surface-border-dark via-surface-card-dark to-surface-border-dark dark:from-surface-border-light dark:via-surface-card-light dark:to-surface-border-light rounded" style={{ backgroundSize: '200% 100%' }} />
-          <div className="h-14 w-3/4 bg-gradient-to-r from-surface-border-dark via-surface-card-dark to-surface-border-dark dark:from-surface-border-light dark:via-surface-card-light dark:to-surface-border-light rounded" style={{ backgroundSize: '200% 100%' }} />
-          <div className="h-6 w-1/2 bg-gradient-to-r from-surface-border-dark via-surface-card-dark to-surface-border-dark dark:from-surface-border-light dark:via-surface-card-light dark:to-surface-border-light rounded" style={{ backgroundSize: '200% 100%' }} />
-          <div className="h-20 w-full bg-gradient-to-r from-surface-border-dark via-surface-card-dark to-surface-border-dark dark:from-surface-border-light dark:via-surface-card-light dark:to-surface-border-light rounded" style={{ backgroundSize: '200% 100%' }} />
+      <div className="container-main relative z-10 pb-20 md:pb-32 lg:pb-40">
+        <div className="max-w-5xl space-y-6">
+          <div className="h-10 w-4/5 bg-gradient-to-r from-surface-border-dark via-surface-card-dark to-surface-border-dark dark:from-surface-border-light dark:via-surface-card-light dark:to-surface-border-light rounded" style={{ backgroundSize: '200% 100%' }} />
+          <div className="h-16 w-3/4 bg-gradient-to-r from-surface-border-dark via-surface-card-dark to-surface-border-dark dark:from-surface-border-light dark:via-surface-card-light dark:to-surface-border-light rounded" style={{ backgroundSize: '200% 100%' }} />
+          <div className="h-10 w-1/2 bg-gradient-to-r from-surface-border-dark via-surface-card-dark to-surface-border-dark dark:from-surface-border-light dark:via-surface-card-light dark:to-surface-border-light rounded" style={{ backgroundSize: '200% 100%' }} />
+          <div className="h-24 w-full bg-gradient-to-r from-surface-border-dark via-surface-card-dark to-surface-border-dark dark:from-surface-border-light dark:via-surface-card-light dark:to-surface-border-light rounded" style={{ backgroundSize: '200% 100%' }} />
           <div className="flex gap-4">
-            <div className="h-12 w-40 bg-gradient-to-r from-surface-border-dark via-surface-card-dark to-surface-border-dark dark:from-surface-border-light dark:via-surface-card-light dark:to-surface-border-light rounded-lg" style={{ backgroundSize: '200% 100%' }} />
-            <div className="h-12 w-32 bg-gradient-to-r from-surface-border-dark via-surface-card-dark to-surface-border-dark dark:from-surface-border-light dark:via-surface-card-light dark:to-surface-border-light rounded-lg" style={{ backgroundSize: '200% 100%' }} />
+            <div className="h-14 w-56 bg-gradient-to-r from-surface-border-dark via-surface-card-dark to-surface-border-dark dark:from-surface-border-light dark:via-surface-card-light dark:to-surface-border-light rounded-lg" style={{ backgroundSize: '200% 100%' }} />
+            <div className="h-14 w-40 bg-gradient-to-r from-surface-border-dark via-surface-card-dark to-surface-border-dark dark:from-surface-border-light dark:via-surface-card-light dark:to-surface-border-light rounded-lg" style={{ backgroundSize: '200% 100%' }} />
           </div>
         </div>
       </div>

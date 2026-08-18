@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { Menu, X, Search, Sun, Moon, Monitor, Bookmark } from 'lucide-react'
+import { Menu, X, Search, Sun, Moon, Monitor, Bookmark, LogIn } from 'lucide-react'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/Button'
@@ -9,12 +9,17 @@ import { Input } from '@/components/ui/Input'
 import { Modal } from '@/components/ui/Modal'
 import { useTheme } from '@/hooks/useTheme'
 import { useWatchlist } from '@/hooks/useWatchlist'
+import { useAuth } from '@/lib/AuthContext'
+import { AuthModal } from '@/components/auth/AuthModal'
+import { UserMenu } from '@/components/auth/UserMenu'
 
 export function Header() {
   const { theme, resolvedTheme, toggleTheme, setTheme, isLoaded: themeLoaded } = useTheme()
   const { count: watchlistCount, isLoaded: watchlistLoaded } = useWatchlist()
+  const { isAuthenticated, isLoading: authLoading } = useAuth()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
+  const [authModalOpen, setAuthModalOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
@@ -33,19 +38,19 @@ export function Header() {
 
   if (!themeLoaded || !watchlistLoaded) {
     return (
-      <header className="fixed top-0 left-0 right-0 z-40 h-16 bg-surface-dark/80 backdrop-blur-lg border-b border-surface-border-dark dark:bg-surface-light/80 dark:border-surface-border-light">
+      <header className="fixed top-0 left-0 right-0 z-40 h-16 bg-surface-dark/80 backdrop-blur-lg border-b border-surface-border-dark">
         <div className="container-main h-full flex items-center justify-between">
           <div className="flex items-center gap-8">
-            <Link href="/" className="flex items-center gap-2" aria-label="MovieStream Home">
-              <span className="text-display-sm font-bold text-gradient">MovieStream</span>
+            <Link href="/" className="flex items-center gap-2" aria-label="Stream Store Home">
+              <span className="text-display-sm font-bold text-gradient">Stream Store</span>
             </Link>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="icon" size="icon" disabled aria-label="Theme toggle">
-              <Sun className="h-5 w-5" />
+              <Sun className="h-6 w-6" />
             </Button>
-            <Button variant="icon" size="icon" disabled aria-label="Watchlist">
-              <Bookmark className="h-5 w-5" />
+            <Button variant="icon" size="icon" disabled aria-label="Watchlist" title="Watchlist">
+              <Bookmark className="h-6 w-6" />
               <span className="sr-only">Watchlist</span>
             </Button>
           </div>
@@ -59,26 +64,26 @@ export function Header() {
       className={cn(
         'fixed top-0 left-0 right-0 z-40 h-16 transition-all duration-normal',
         scrolled
-          ? 'bg-surface-dark/90 backdrop-blur-lg border-b border-surface-border-dark dark:bg-surface-light/90 dark:border-surface-border-light shadow-shadow-lg'
+          ? 'bg-surface-dark/90 backdrop-blur-lg border-b border-surface-border-dark shadow-shadow-lg'
           : 'bg-transparent'
       )}
     >
       <div className="container-main h-full flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 shrink-0" aria-label="MovieStream Home">
-          <span className="text-display-sm font-bold text-gradient">MovieStream</span>
+        <Link href="/" className="flex items-center gap-2 shrink-0" aria-label="Stream Store Home">
+          <span className="text-display-sm font-bold text-gradient">Stream Store</span>
         </Link>
 
         <nav className="hidden md:flex items-center gap-6" aria-label="Main navigation">
-          <Link href="/" className="text-body-sm font-medium text-text-secondary-dark hover:text-text-primary-dark transition-colors dark:text-text-secondary-light dark:hover:text-text-primary-light">
+          <Link href="/" className="text-body-sm font-medium text-text-secondary-dark hover:text-text-primary-dark transition-colors">
             Home
           </Link>
-          <Link href="/movies/popular" className="text-body-sm font-medium text-text-secondary-dark hover:text-text-primary-dark transition-colors dark:text-text-secondary-light dark:hover:text-text-primary-light">
+          <Link href="/movies/popular" className="text-body-sm font-medium text-text-secondary-dark hover:text-text-primary-dark transition-colors">
             Movies
           </Link>
-          <Link href="/movies/top_rated" className="text-body-sm font-medium text-text-secondary-dark hover:text-text-primary-dark transition-colors dark:text-text-secondary-light dark:hover:text-text-primary-light">
+          <Link href="/movies/top_rated" className="text-body-sm font-medium text-text-secondary-dark hover:text-text-primary-dark transition-colors">
             Top Rated
           </Link>
-          <Link href="/search" className="text-body-sm font-medium text-text-secondary-dark hover:text-text-primary-dark transition-colors dark:text-text-secondary-light dark:hover:text-text-primary-light">
+          <Link href="/search" className="text-body-sm font-medium text-text-secondary-dark hover:text-text-primary-dark transition-colors">
             Search
           </Link>
         </nav>
@@ -91,7 +96,7 @@ export function Header() {
             aria-label={`Current theme: ${theme}. Click to cycle.`}
             title={`Theme: ${theme}`}
           >
-            <ThemeIcon className="h-5 w-5" />
+            <ThemeIcon className="h-6 w-6" />
           </Button>
 
           <Button
@@ -100,20 +105,37 @@ export function Header() {
             onClick={() => setSearchOpen(true)}
             className="hidden sm:flex gap-2"
           >
-            <Search className="h-4 w-4" />
+            <Search className="h-5 w-5" />
             <span>Search</span>
           </Button>
 
-          <Link href="/watchlist" className="relative">
-            <Button variant="icon" size="icon" aria-label={`Watchlist (${watchlistCount} items)`}>
-              <Bookmark className="h-5 w-5" />
+          <Link href="/watchlist" className="relative" title="Watchlist">
+            <Button variant="icon" size="icon" aria-label={`Watchlist (${watchlistCount} items)`} title="Watchlist">
+              <Bookmark className="h-6 w-6" />
               {watchlistCount > 0 && (
-                <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-brand-500 text-[10px] font-bold text-white">
+                <span className="absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-brand-500 text-[12px] font-bold text-brand-contrast">
                   {watchlistCount > 99 ? '99+' : watchlistCount}
                 </span>
               )}
             </Button>
           </Link>
+
+          {/* Auth: Sign In or User Menu */}
+          {!authLoading && (
+            isAuthenticated ? (
+              <UserMenu />
+            ) : (
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => setAuthModalOpen(true)}
+                className="hidden sm:flex gap-2"
+              >
+                <LogIn className="h-4 w-4" />
+                Sign In
+              </Button>
+            )
+          )}
 
           <Button
             variant="icon"
@@ -123,19 +145,31 @@ export function Header() {
             aria-label="Open menu"
             aria-expanded={mobileMenuOpen}
           >
-            <Menu className="h-6 w-6" />
+            <Menu className="h-7 w-7" />
           </Button>
         </div>
+
       </div>
 
-      <MobileMenu isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
+      <MobileMenu
+        isOpen={mobileMenuOpen}
+        onClose={() => setMobileMenuOpen(false)}
+        onSignIn={() => {
+          setMobileMenuOpen(false)
+          setAuthModalOpen(true)
+        }}
+      />
 
       <SearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
+
+      <AuthModal isOpen={authModalOpen} onClose={() => setAuthModalOpen(false)} />
     </header>
   )
 }
 
-function MobileMenu({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+function MobileMenu({ isOpen, onClose, onSignIn }: { isOpen: boolean; onClose: () => void; onSignIn: () => void }) {
+  const { isAuthenticated, user, signOut } = useAuth()
+
   const navItems = [
     { href: '/', label: 'Home' },
     { href: '/movies/popular', label: 'Popular Movies' },
@@ -150,7 +184,7 @@ function MobileMenu({ isOpen, onClose }: { isOpen: boolean; onClose: () => void 
     <Modal isOpen={isOpen} onClose={onClose} size="full" showCloseButton={false}>
       <div className="flex flex-col h-full p-8">
         <div className="flex items-center justify-between mb-12">
-          <span className="text-display-sm font-bold text-gradient">MovieStream</span>
+          <span className="text-display-sm font-bold text-gradient">Stream Store</span>
           <Button variant="icon" size="icon" onClick={onClose} aria-label="Close menu">
             <X className="h-6 w-6" />
           </Button>
@@ -162,7 +196,7 @@ function MobileMenu({ isOpen, onClose }: { isOpen: boolean; onClose: () => void 
                 <Link
                   href={item.href}
                   onClick={onClose}
-                  className="block text-heading-sm font-medium text-text-primary-dark hover:text-brand-500 transition-colors dark:text-text-primary-light dark:hover:text-brand-400"
+                  className="block text-heading-sm font-medium text-text-primary-dark hover:text-brand-500 transition-colors"
                 >
                   {item.label}
                 </Link>
@@ -170,6 +204,40 @@ function MobileMenu({ isOpen, onClose }: { isOpen: boolean; onClose: () => void 
             ))}
           </ul>
         </nav>
+
+        {/* Mobile auth */}
+        <div className="pt-8 border-t border-surface-border-dark">
+          {isAuthenticated ? (
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-brand-500 flex items-center justify-center text-brand-contrast text-body-sm font-bold">
+                  {user?.name?.charAt(0) || 'U'}
+                </div>
+                <div>
+                  <p className="text-body-sm font-semibold">{user?.name}</p>
+                  <p className="text-caption text-text-muted-dark">{user?.email}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  signOut()
+                  onClose()
+                }}
+                className="w-full text-left text-body-sm text-text-secondary-dark hover:text-text-primary-dark transition-colors"
+              >
+                Sign Out
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={onSignIn}
+              className="w-full btn-primary gap-2"
+            >
+              <LogIn className="h-5 w-5" />
+              Sign In
+            </button>
+          )}
+        </div>
       </div>
     </Modal>
   )
@@ -207,7 +275,7 @@ function SearchModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
     >
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-text-muted-dark dark:text-text-muted-light" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-text-muted-dark" />
           <input
             ref={inputRef}
             id="search-modal-input"
@@ -215,7 +283,7 @@ function SearchModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search movies, actors, directors..."
-            className="w-full pl-10 pr-4 py-3 rounded-xl bg-surface-card-dark border border-surface-border-dark text-text-primary-dark placeholder-text-muted-dark focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none dark:bg-surface-card-light dark:border-surface-border-light dark:text-text-primary-light dark:placeholder-text-muted-light"
+            className="w-full pl-10 pr-4 py-3 rounded-xl bg-surface-card-dark border border-surface-border-dark text-text-primary-dark placeholder-text-muted-dark focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none"
             autoComplete="off"
             autoFocus
           />
@@ -228,8 +296,8 @@ function SearchModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
             Search
           </Button>
         </div>
-        <p className="text-caption text-center text-text-muted-dark dark:text-text-muted-light">
-          Press <kbd className="px-1.5 py-0.5 rounded bg-surface-border-dark dark:bg-surface-border-light">Esc</kbd> to close
+        <p className="text-caption text-center text-text-muted-dark">
+          Press <kbd className="px-1.5 py-0.5 rounded bg-surface-border-dark">Esc</kbd> to close
         </p>
       </form>
     </Modal>

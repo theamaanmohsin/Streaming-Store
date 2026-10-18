@@ -1,0 +1,106 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: /users/{userId}
+    // Document ID: {userId} (matches Firebase Auth UID)
+    // Fields:
+    //   - email: string (required, valid email)
+    //   - displayName: string (optional, <= 100 chars)
+    //   - photoURL: string (optional, <= 500 chars)
+    //   - createdAt: string or timestamp (optional)
+    //   - updatedAt: string or timestamp (optional)
+    //
+    // Subcollection: /users/{userId}/watchlist/{movieId}
+    // Document ID: {movieId} (string representing movie ID)
+    // Fields:
+    //   - id: number (required, positive integer)
+    //   - title: string (required, <= 300 chars)
+    //   - overview: string (optional, <= 5000 chars)
+    //   - poster_path: string (optional, <= 300 chars)
+    //   - backdrop_path: string (optional, <= 300 chars)
+    //   - release_date: string (optional, <= 50 chars)
+    //   - vote_average: number (optional, 0 to 10)
+    //   - vote_count: number (optional, >= 0)
+    //   - genre_ids: list of numbers (optional, <= 20 items)
+    //   - addedAt: string (optional, ISO date)
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    function isValidEmail(email) {
+      return email is string &&
+        email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    function isValidUserDoc(data) {
+      return hasOnlyAllowedFields(['email', 'displayName', 'photoURL', 'createdAt', 'updatedAt']) &&
+        data.email is string &&
+        isValidEmail(data.email) &&
+        (!('displayName' in data) || (data.displayName is string && data.displayName.size() <= 100)) &&
+        (!('photoURL' in data) || (data.photoURL is string && data.photoURL.size() <= 500));
+    }
+
+    function isValidWatchlistItem(data) {
+      return hasOnlyAllowedFields([
+          'id', 'title', 'overview', 'poster_path', 'backdrop_path',
+          'release_date', 'vote_average', 'vote_count', 'genre_ids',
+          'addedAt', 'media_type', 'adult', 'popularity', 'original_language',
+          'original_title', 'video'
+        ]) &&
+        data.id is number &&
+        data.title is string && data.title.size() > 0 && data.title.size() <= 300 &&
+        (!('overview' in data) || (data.overview is string && data.overview.size() <= 5000)) &&
+        (!('poster_path' in data) || (data.poster_path == null || (data.poster_path is string && data.poster_path.size() <= 300))) &&
+        (!('backdrop_path' in data) || (data.backdrop_path == null || (data.backdrop_path is string && data.backdrop_path.size() <= 300))) &&
+        (!('release_date' in data) || (data.release_date is string && data.release_date.size() <= 50)) &&
+        (!('vote_average' in data) || (data.vote_average is number && data.vote_average >= 0 && data.vote_average <= 10)) &&
+        (!('vote_count' in data) || (data.vote_count is number && data.vote_count >= 0)) &&
+        (!('genre_ids' in data) || (data.genre_ids is list && data.genre_ids.size() <= 30));
+    }
+
+    // ===============================================================
+    // Collection Rules
+    // ===============================================================
+
+    // User profile document: strictly restricted to document owner
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUserDoc(request.resource.data);
+      allow update: if isOwner(userId) && isValidUserDoc(request.resource.data);
+      allow delete: if isOwner(userId);
+
+      // User watchlist subcollection: strictly restricted to owner
+      match /watchlist/{movieId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidWatchlistItem(request.resource.data);
+        allow update: if isOwner(userId) && isValidWatchlistItem(request.resource.data);
+        allow delete: if isOwner(userId);
+      }
+    }
+
+    // Default deny all other collections
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

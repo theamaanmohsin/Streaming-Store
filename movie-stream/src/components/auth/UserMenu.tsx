@@ -75,10 +75,11 @@ export function UserMenu() {
             <div className="mt-2">
               <span className={cn(
                 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium',
-                user.provider === 'google' && 'bg-surface-border-dark text-text-secondary-dark',
-                user.provider === 'apple' && 'bg-gray-500/10 text-gray-400'
+                user.provider === 'google' && 'bg-blue-500/10 text-blue-400',
+                user.provider === 'apple' && 'bg-gray-500/10 text-gray-400',
+                user.provider === 'email' && 'bg-brand-500/10 text-brand-400'
               )}>
-                {user.provider === 'google' ? '● Google' : '● Apple ID'}
+                {user.provider === 'google' ? '● Google' : user.provider === 'apple' ? '● Apple ID' : '● Email'}
               </span>
             </div>
           </div>

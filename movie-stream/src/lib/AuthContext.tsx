@@ -1,6 +1,21 @@
 'use client'
 
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
+import {
+  GoogleAuthProvider,
+  OAuthProvider,
+  createUserWithEmailAndPassword,
+  onAuthStateChanged,
+  sendEmailVerification,
+  sendPasswordResetEmail,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  signOut as firebaseSignOut,
+  updateProfile,
+  type User as FirebaseUser
+} from 'firebase/auth'
+import { doc, setDoc } from 'firebase/firestore'
+import { auth, db } from './firebase'
 
 export interface User {
   id: string
@@ -16,83 +31,104 @@ interface AuthContextType {
   isLoading: boolean
   signInWithGoogle: () => Promise<void>
   signInWithApple: () => Promise<void>
-  signOut: () => void
+  signInWithEmail: (email: string, password: string) => Promise<void>
+  signUpWithEmail: (email: string, password: string, displayName?: string) => Promise<void>
+  sendPasswordReset: (email: string) => Promise<void>
+  signOut: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-const AUTH_STORAGE_KEY = 'stream-store-auth'
+function toUser(firebaseUser: FirebaseUser): User {
+  const provider = firebaseUser.providerData.some((item) => item.providerId === 'google.com')
+    ? 'google'
+    : firebaseUser.providerData.some((item) => item.providerId === 'apple.com')
+    ? 'apple'
+    : 'email'
 
-// Demo user profiles for mock auth
-const GOOGLE_DEMO_USER: User = {
-  id: 'google-user-001',
-  name: 'Stream User',
-  email: 'user@gmail.com',
-  avatar: '',
-  provider: 'google',
+  return {
+    id: firebaseUser.uid,
+    name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'Stream User',
+    email: firebaseUser.email || '',
+    avatar: firebaseUser.photoURL || '',
+    provider,
+  }
 }
 
-const APPLE_DEMO_USER: User = {
-  id: 'apple-user-001',
-  name: 'Stream User',
-  email: 'user@icloud.com',
-  avatar: '',
-  provider: 'apple',
+async function syncUserToFirestore(firebaseUser: FirebaseUser) {
+  try {
+    const userRef = doc(db, 'users', firebaseUser.uid)
+    await setDoc(
+      userRef,
+      {
+        email: firebaseUser.email || '',
+        displayName: firebaseUser.displayName || '',
+        photoURL: firebaseUser.photoURL || '',
+        updatedAt: new Date().toISOString(),
+      },
+      { merge: true }
+    )
+  } catch (error) {
+    // Non-blocking catch so Firestore sync errors do not crash authentication
+    console.warn('Could not sync user profile to Firestore:', error)
+  }
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  // Load persisted auth state
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(AUTH_STORAGE_KEY)
-      if (stored) {
-        const parsed = JSON.parse(stored)
-        if (parsed && parsed.id) {
-          setUser(parsed)
-        }
-      }
-    } catch (error) {
-      console.error('Failed to load auth state:', error)
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
-
-  const persistUser = useCallback((u: User | null) => {
-    try {
-      if (u) {
-        localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(u))
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        setUser(toUser(firebaseUser))
+        syncUserToFirestore(firebaseUser)
       } else {
-        localStorage.removeItem(AUTH_STORAGE_KEY)
+        setUser(null)
       }
-    } catch (error) {
-      console.error('Failed to persist auth state:', error)
-    }
+      setIsLoading(false)
+    })
+    return () => unsubscribe()
   }, [])
 
-  const signInWithGoogle = useCallback(async () => {
-    // Simulate OAuth delay
-    await new Promise((resolve) => setTimeout(resolve, 1200))
-    const user = { ...GOOGLE_DEMO_USER }
-    setUser(user)
-    persistUser(user)
-  }, [persistUser])
+  const signInWithProvider = async (provider: GoogleAuthProvider | OAuthProvider) => {
+    const result = await signInWithPopup(auth, provider)
+    if (result.user) {
+      setUser(toUser(result.user))
+      await syncUserToFirestore(result.user)
+    }
+  }
 
-  const signInWithApple = useCallback(async () => {
-    // Simulate OAuth delay
-    await new Promise((resolve) => setTimeout(resolve, 1200))
-    const user = { ...APPLE_DEMO_USER }
-    setUser(user)
-    persistUser(user)
-  }, [persistUser])
+  const signInWithGoogle = () => signInWithProvider(new GoogleAuthProvider())
+  const signInWithApple = () => signInWithProvider(new OAuthProvider('apple.com'))
 
-  const signOut = useCallback(() => {
+  const signInWithEmail = async (email: string, password: string) => {
+    const credential = await signInWithEmailAndPassword(auth, email, password)
+    if (credential.user) {
+      setUser(toUser(credential.user))
+      await syncUserToFirestore(credential.user)
+    }
+  }
+
+  const signUpWithEmail = async (email: string, password: string, displayName?: string) => {
+    const credential = await createUserWithEmailAndPassword(auth, email, password)
+    if (credential.user) {
+      if (displayName) {
+        await updateProfile(credential.user, { displayName })
+      }
+      setUser(toUser(credential.user))
+      await syncUserToFirestore(credential.user)
+    }
+  }
+
+  const sendPasswordReset = async (email: string) => {
+    await sendPasswordResetEmail(auth, email)
+  }
+
+  const signOut = async () => {
+    await firebaseSignOut(auth)
     setUser(null)
-    persistUser(null)
-  }, [persistUser])
+  }
 
   return (
     <AuthContext.Provider
@@ -102,6 +138,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoading,
         signInWithGoogle,
         signInWithApple,
+        signInWithEmail,
+        signUpWithEmail,
+        sendPasswordReset,
         signOut,
       }}
     >

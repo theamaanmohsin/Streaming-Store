@@ -1,0 +1,18 @@
+# Firebase App Hosting configuration for Next.js App Router
+env:
+  - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+    value: streaming-store-21a6a.firebaseapp.com
+  - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+    value: streaming-store-21a6a
+  - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+    value: streaming-store-21a6a.firebasestorage.app
+  - variable: NEXT_PUBLIC_FIREBASE_API_KEY
+    value: REPLACE_IN_FIREBASE_CONSOLE
+  - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+    value: REPLACE_IN_FIREBASE_CONSOLE
+  - variable: NEXT_PUBLIC_FIREBASE_APP_ID
+    value: REPLACE_IN_FIREBASE_CONSOLE
+  - variable: TMDB_API_KEY
+    secret: TMDB_API_KEY
+  - variable: NEXT_PUBLIC_TMDB_API_KEY
+    secret: TMDB_API_KEY

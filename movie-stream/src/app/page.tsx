@@ -1,9 +1,8 @@
 import { Metadata } from 'next'
-import { getMovieList } from '@/lib/tmdb'
-import { Hero } from '@/components/layout/Hero'
+import { getMovieList, getMovieDetail } from '@/lib/tmdb'
+import { Hero, HeroSkeleton } from '@/components/layout/Hero'
 import { MovieRow, FeaturedMovieRow } from '@/components/movies/MovieRow'
-import { HeroSkeleton } from '@/components/layout/Hero'
-import type { TMDBMovieDetail, TMDBMovie } from '@/types/tmdb'
+import type { TMDBMovieDetail, TMDBPaginatedResponse, TMDBMovie } from '@/types/tmdb'
 
 export const metadata: Metadata = {
   title: 'Discover & Stream Movies',
@@ -11,28 +10,40 @@ export const metadata: Metadata = {
 }
 
 async function getHomeData() {
-  const [featured, popular, topRated, nowPlaying, upcoming] = await Promise.all([
-    getMovieList('popular', 1).then((res) => res.results[0]).then(async (movie) => {
-      if (movie) {
-        const detail = await fetch(
-          `https://api.themoviedb.org/3/movie/${movie.id}?api_key=${process.env.TMDB_API_KEY}&append_to_response=videos,genres`
-        ).then((r) => r.json())
-        return detail as TMDBMovieDetail
-      }
-      return null
-    }),
-    getMovieList('popular', 1),
-    getMovieList('top_rated', 1),
-    getMovieList('now_playing', 1),
-    getMovieList('upcoming', 1),
+  const emptyList: TMDBPaginatedResponse<TMDBMovie> = {
+    results: [],
+    total_pages: 0,
+    total_results: 0,
+    page: 1,
+  }
+
+  const [popularRes, topRatedRes, nowPlayingRes, upcomingRes] = await Promise.all([
+    getMovieList('popular', 1).catch(() => emptyList),
+    getMovieList('top_rated', 1).catch(() => emptyList),
+    getMovieList('now_playing', 1).catch(() => emptyList),
+    getMovieList('upcoming', 1).catch(() => emptyList),
   ])
+
+  const popular = popularRes.results.slice(0, 20)
+  const topRated = topRatedRes.results.slice(0, 20)
+  const nowPlaying = nowPlayingRes.results.slice(0, 20)
+  const upcoming = upcomingRes.results.slice(0, 20)
+
+  let featured: TMDBMovieDetail | null = null
+  if (popular.length > 0) {
+    try {
+      featured = await getMovieDetail(popular[0].id)
+    } catch (err) {
+      console.warn('Could not fetch featured movie details:', err)
+    }
+  }
 
   return {
     featured,
-    popular: popular.results.slice(0, 20),
-    topRated: topRated.results.slice(0, 20),
-    nowPlaying: nowPlaying.results.slice(0, 20),
-    upcoming: upcoming.results.slice(0, 20),
+    popular,
+    topRated,
+    nowPlaying,
+    upcoming,
   }
 }
 
@@ -48,7 +59,9 @@ export default async function HomePage() {
       )}
 
       <div className="container-main section space-y-16">
-        <FeaturedMovieRow movies={popular.slice(0, 1)} isLoading={!popular.length} />
+        {popular.length > 0 && (
+          <FeaturedMovieRow movies={popular.slice(0, 1)} isLoading={!popular.length} />
+        )}
 
         <MovieRow title="Popular Movies" movies={popular} type="popular" endpoint="/movies/popular" />
         <MovieRow title="Top Rated" movies={topRated} type="top_rated" endpoint="/movies/top_rated" />

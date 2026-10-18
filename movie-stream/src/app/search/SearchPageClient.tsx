@@ -131,14 +131,14 @@ export default function SearchPageClient() {
           {isLoading && results.length === 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
               {Array.from({ length: 12 }).map((_, i) => (
-                <MovieCardSkeleton key={i} size="medium" />
+                <MovieCardSkeleton key={i} size="auto" />
               ))}
             </div>
           ) : results.length > 0 ? (
             <>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
                 {results.map((movie, index) => (
-                  <MovieCard key={`${movie.id}-${index}`} movie={movie} index={index} size="medium" />
+                  <MovieCard key={`${movie.id}-${index}`} movie={movie} index={index} size="auto" />
                 ))}
               </div>
               {currentPage < totalPages && (

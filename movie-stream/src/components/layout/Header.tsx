@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Menu, X, Search, Sun, Moon, Monitor, Bookmark, LogIn } from 'lucide-react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -244,6 +245,7 @@ function MobileMenu({ isOpen, onClose, onSignIn }: { isOpen: boolean; onClose: (
 }
 
 function SearchModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+  const router = useRouter()
   const [query, setQuery] = useState('')
   const inputRef = useRef<HTMLInputElement | null>(null)
 
@@ -261,7 +263,7 @@ function SearchModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
     e.preventDefault()
     if (query.trim()) {
       onClose()
-      window.location.href = `/search?q=${encodeURIComponent(query.trim())}`
+      router.push(`/search?q=${encodeURIComponent(query.trim())}`)
     }
   }
 

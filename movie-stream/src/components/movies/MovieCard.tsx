@@ -13,21 +13,24 @@ import { useWatchlist } from '@/hooks/useWatchlist'
 interface MovieCardProps {
   movie: TMDBMovie
   index?: number
-  size?: 'small' | 'medium' | 'large'
+  size?: 'small' | 'medium' | 'large' | 'auto'
   variant?: 'default' | 'featured'
   priority?: boolean
+  className?: string
 }
 
-const SIZE_CLASSES = {
+const SIZE_CLASSES: Record<'small' | 'medium' | 'large' | 'auto', string> = {
   small: 'w-32',
   medium: 'w-48',
   large: 'w-56',
+  auto: 'w-full',
 }
 
-const SIZE_HEIGHTS = {
+const SIZE_HEIGHTS: Record<'small' | 'medium' | 'large' | 'auto', string> = {
   small: 'h-48',
   medium: 'h-64',
   large: 'h-72',
+  auto: 'h-auto',
 }
 
 export function MovieCard({
@@ -36,6 +39,7 @@ export function MovieCard({
   size = 'medium',
   variant = 'default',
   priority = false,
+  className,
 }: MovieCardProps) {
   const { isInWatchlist, toggleWatchlist } = useWatchlist()
   const inWatchlist = isInWatchlist(movie.id)
@@ -108,11 +112,14 @@ export function MovieCard({
   }
 
   return (
-    <Link href={`/movie/${movie.id}`}>
+    <Link href={`/movie/${movie.id}`} className={size === 'auto' ? 'block w-full' : 'inline-block'}>
       <article
         className={cn(
-          'group relative animate-in shrink-0 transition-transform duration-normal ease-out hover:scale-[1.035]',
-          `stagger-${Math.min(Math.floor(index / 4) + 1, 8)}`
+          'group relative animate-in transition-transform duration-normal ease-out hover:scale-[1.035]',
+          size !== 'auto' && 'shrink-0',
+          size === 'auto' && 'w-full',
+          `stagger-${Math.min(Math.floor(index / 4) + 1, 8)}`,
+          className
         )}
         style={{ animationDelay: `${staggerDelay}ms` }}
       >
@@ -149,7 +156,15 @@ export function MovieCard({
           </div>
         </div>
         <div className="mt-3 text-center">
-          <h4 title={movie.title} className={cn('min-h-[2.6em] font-medium text-body-sm leading-[1.3] line-clamp-2', SIZE_CLASSES[size])}>{movie.title}</h4>
+          <h4
+            title={movie.title}
+            className={cn(
+              'min-h-[2.6em] font-medium text-body-sm leading-[1.3] line-clamp-2',
+              size !== 'auto' ? SIZE_CLASSES[size] : 'w-full'
+            )}
+          >
+            {movie.title}
+          </h4>
           <p className="text-caption text-text-muted-dark">{formatYear(movie.release_date)}</p>
         </div>
       </article>
@@ -157,22 +172,30 @@ export function MovieCard({
   )
 }
 
-export function MovieCardSkeleton({ size = 'medium', variant = 'default' }: { size?: 'small' | 'medium' | 'large'; variant?: 'default' | 'featured' }) {
+export function MovieCardSkeleton({
+  size = 'medium',
+  variant = 'default',
+  className,
+}: {
+  size?: 'small' | 'medium' | 'large' | 'auto'
+  variant?: 'default' | 'featured'
+  className?: string
+}) {
   if (variant === 'featured') {
     return (
-      <div className="relative aspect-[16/9] rounded-2xl overflow-hidden animate-pulse-soft">
+      <div className={cn("relative aspect-[16/9] rounded-2xl overflow-hidden animate-pulse-soft", className)}>
         <div className="absolute inset-0 bg-gradient-to-r from-surface-border-dark via-surface-card-dark to-surface-border-dark" style={{ backgroundSize: '200% 100%' }} />
       </div>
     )
   }
 
   return (
-    <div className="animate-in stagger-1 shrink-0">
+    <div className={cn('animate-in stagger-1', size !== 'auto' && 'shrink-0', size === 'auto' && 'w-full', className)}>
       <div className={cn('aspect-[2/3] rounded-xl overflow-hidden relative', SIZE_CLASSES[size])}>
         <div className="absolute inset-0 bg-gradient-to-r from-surface-border-dark via-surface-card-dark to-surface-border-dark animate-pulse-soft" style={{ backgroundSize: '200% 100%' }} />
       </div>
       <div className="mt-2 text-center space-y-1">
-        <div className={cn('h-4 bg-gradient-to-r from-surface-border-dark via-surface-card-dark to-surface-border-dark rounded mx-auto', SIZE_CLASSES[size])} style={{ backgroundSize: '200% 100%' }} />
+        <div className={cn('h-4 bg-gradient-to-r from-surface-border-dark via-surface-card-dark to-surface-border-dark rounded mx-auto', size !== 'auto' ? SIZE_CLASSES[size] : 'w-3/4')} style={{ backgroundSize: '200% 100%' }} />
         <div className="h-3 w-1/2 mx-auto bg-gradient-to-r from-surface-border-dark via-surface-card-dark to-surface-border-dark rounded" style={{ backgroundSize: '200% 100%' }} />
       </div>
     </div>

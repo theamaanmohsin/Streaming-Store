@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Play, ChevronRight, Star, Calendar, Clock, Ticket, Heart, Bookmark, Share2, ExternalLink } from 'lucide-react'
+import { Play, ChevronRight, Star, Calendar, Clock, Ticket, Heart, Bookmark, Share2, ExternalLink, Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { getImageUrl, getBackdropUrl, getTrailerKey, getYouTubeEmbedUrl, formatYear, formatRuntime, formatRating, formatReleaseDate, formatNumber } from '@/lib/tmdb'
 import { Button } from '@/components/ui/Button'
@@ -21,12 +21,42 @@ export function MovieDetailClient({ movie }: MovieDetailClientProps) {
   const inWatchlist = isInWatchlist(movie.id)
   const [trailerOpen, setTrailerOpen] = useState(false)
   const [trailerKey, setTrailerKey] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
+
+  const availableTrailerKey = getTrailerKey(movie.videos)
 
   const handlePlayTrailer = () => {
-    const key = getTrailerKey(movie.videos)
-    if (key) {
-      setTrailerKey(key)
+    if (availableTrailerKey) {
+      setTrailerKey(availableTrailerKey)
       setTrailerOpen(true)
+    }
+  }
+
+  const handleShare = async () => {
+    const url = typeof window !== 'undefined' ? window.location.href : ''
+    const shareData = {
+      title: `${movie.title} | Stream Store`,
+      text: movie.overview || `Watch ${movie.title} on Stream Store`,
+      url,
+    }
+
+    if (typeof navigator !== 'undefined' && navigator.share && navigator.canShare?.(shareData)) {
+      try {
+        await navigator.share(shareData)
+        return
+      } catch {
+        // User closed the share dialog or share failed
+      }
+    }
+
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      try {
+        await navigator.clipboard.writeText(url)
+        setCopied(true)
+        setTimeout(() => setCopied(false), 2500)
+      } catch (err) {
+        console.error('Clipboard copy failed:', err)
+      }
     }
   }
 
@@ -83,17 +113,29 @@ export function MovieDetailClient({ movie }: MovieDetailClientProps) {
               )}
 
               <div className="flex flex-wrap items-center gap-4 pt-2">
-                <Button size="lg" onClick={handlePlayTrailer} className="gap-2" aria-label={`Play trailer for ${movie.title}`}>
+                <Button
+                  size="lg"
+                  onClick={handlePlayTrailer}
+                  disabled={!availableTrailerKey}
+                  className="gap-2"
+                  aria-label={`Play trailer for ${movie.title}`}
+                >
                   <Play className="h-5 w-5" />
-                  Play Trailer
+                  {availableTrailerKey ? 'Play Trailer' : 'Trailer Unavailable'}
                 </Button>
                 <Button variant="secondary" size="lg" onClick={() => toggleWatchlist(movie)} className="gap-2">
                   {inWatchlist ? <Bookmark className="h-5 w-5 fill-current" /> : <Bookmark className="h-5 w-5" />}
                   {inWatchlist ? 'Remove from Watchlist' : 'Add to Watchlist'}
                 </Button>
-                <Button variant="ghost" size="lg" className="gap-2">
-                  <Share2 className="h-5 w-5" />
-                  Share
+                <Button
+                  variant="ghost"
+                  size="lg"
+                  onClick={handleShare}
+                  className={cn("gap-2 transition-colors", copied && "text-emerald-400 bg-emerald-500/10")}
+                  aria-label="Share movie link"
+                >
+                  {copied ? <Check className="h-5 w-5 text-emerald-400" /> : <Share2 className="h-5 w-5" />}
+                  {copied ? 'Link Copied!' : 'Share'}
                 </Button>
               </div>
 
